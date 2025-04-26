@@ -1,7 +1,16 @@
-package com.dungnt.dto;
+package com.dungnt.dto.common;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaymentResult {
     private String orderId;
     private String merchantCode;
