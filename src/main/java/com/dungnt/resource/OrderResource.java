@@ -4,7 +4,7 @@ import com.dungnt.client.PaymentGatewayClient;
 //import com.dungnt.repository.ConfigRepository;
 import com.dungnt.dto.common.*;
 import com.dungnt.dto.partner.OrderInfoRequest;
-import com.dungnt.dto.partner.PartnerResponse;
+import com.dungnt.dto.common.PartnerResponse;
 import com.dungnt.dto.common.PaymentResult;
 import com.dungnt.dto.pg.CreateTransactionRequest;
 import com.dungnt.dto.pg.CreateTransactionResponse;
@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Path("/merchant/order")
+@Path("/merchant/paygate")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Singleton

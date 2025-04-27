@@ -1,19 +1,16 @@
 package com.dungnt.resource;
 
-import com.dungnt.client.PaymentGatewayClient;
 import com.dungnt.client.TokenClient;
 import com.dungnt.dto.common.PaymentTokenBaseRequest;
 import com.dungnt.dto.common.PaymentTokenBaseResponse;
-import com.dungnt.dto.partner.PartnerResponse;
-import com.dungnt.dto.pg.CreateTransactionResponse;
+import com.dungnt.dto.common.PartnerResponse;
+import com.dungnt.dto.common.TokenResult;
+import com.dungnt.dto.partner.TokenInfoRequest;
 import com.dungnt.dto.token.*;
 import com.dungnt.util.CommonUtils;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -22,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Path("/merchant/link")
+@Path("/merchant/token")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Singleton
@@ -35,7 +32,7 @@ public class LinkResource {
     CommonUtils utils;
 
     @POST
-    @Path("initialize-link")
+    @Path("/initialize-link")
     public Response initializeLink(InitializeLinkRequest clientRequest) {
         clientRequest.setOrderId(utils.generateULID());
         clientRequest.setMerchantUserId(utils.generateULID());
@@ -55,7 +52,7 @@ public class LinkResource {
     }
 
     @POST
-    @Path("search")
+    @Path("/search")
     public Response search(TokenSearchRequest clientRequest) {
         PartnerResponse<List<TokenSearchResponse>> clientResponse = tokenClient.searchLink(
                 "", "", clientRequest);
@@ -67,14 +64,14 @@ public class LinkResource {
     }
 
     @POST
-    @Path("check-available")
+    @Path("/check-available")
     public Response checkAvailable(PaymentAvailabilityRequest clientRequest) {
         Map<String, Object> response = new HashMap<>();
         return Response.ok(response).build();
     }
 
     @POST
-    @Path("token-payment")
+    @Path("/token-payment")
     public Response paymentByToken(PaymentTokenBaseRequest clientRequest) {
         clientRequest.setOrderId(utils.generateULID());
         clientRequest.setToken("");
@@ -95,7 +92,7 @@ public class LinkResource {
     }
 
     @POST
-    @Path("token-payment-confirm")
+    @Path("/token-payment-confirm")
     public Response paymentByTokenConfirm(PaymentTokenBaseRequest clientRequest) {
         PartnerResponse<PaymentTokenBaseResponse> clientResponse = tokenClient.paymentByTokenConfirm(
                 "", "", clientRequest);
@@ -110,7 +107,7 @@ public class LinkResource {
     }
 
     @POST
-    @Path("payment-retry-otp")
+    @Path("/payment-retry-otp")
     public Response paymentRetryOtp(PaymentTokenBaseRequest clientRequest) {
         PartnerResponse<PaymentTokenBaseResponse> clientResponse = tokenClient.paymentRetryOtp(
                 "", "", clientRequest);
@@ -128,6 +125,67 @@ public class LinkResource {
         return Response.ok(response).build();
     }
 
+    @POST
+    @Path("/verify")
+    public Response verify(
+            @HeaderParam("Signature") String signature,
+            TokenInfoRequest body) {
+        if (signature == null || signature.isBlank()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
 
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "00");
+        response.put("orderId", "1234");
 
+        return Response.ok(response).build();
+    }
+
+    @POST
+    @Path("/link/ipn")
+    public Response linkIpn(
+            @HeaderParam("Signature") String signature,
+            TokenResult body) {
+        if (signature == null || signature.isBlank()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "00");
+        response.put("orderId", "1234");
+
+        return Response.ok(response).build();
+    }
+
+    @POST
+    @Path("/payment/ipn")
+    public Response paymentIpn(
+            @HeaderParam("Signature") String signature,
+            TokenResult body) {
+        if (signature == null || signature.isBlank()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "00");
+        response.put("orderId", "1234");
+
+        return Response.ok(response).build();
+    }
+
+    @POST
+    @Path("/unlink/ipn")
+    public Response unlinkIpn(
+            @HeaderParam("Signature") String signature,
+            TokenResult body) {
+        if (signature == null || signature.isBlank()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "00");
+        response.put("orderId", "1234");
+
+        return Response.ok(response).build();
+    }
 }

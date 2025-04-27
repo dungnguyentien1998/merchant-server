@@ -1,4 +1,4 @@
-package com.dungnt.dto.partner;
+package com.dungnt.dto.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

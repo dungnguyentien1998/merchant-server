@@ -1,7 +1,7 @@
 package com.dungnt.client;
 
 import com.dungnt.dto.common.*;
-import com.dungnt.dto.partner.PartnerResponse;
+import com.dungnt.dto.common.PartnerResponse;
 import com.dungnt.dto.pg.CreateTransactionRequest;
 import com.dungnt.dto.pg.CreateTransactionResponse;
 import jakarta.ws.rs.*;
