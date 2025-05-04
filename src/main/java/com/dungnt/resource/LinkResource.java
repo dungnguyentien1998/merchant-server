@@ -7,6 +7,8 @@ import com.dungnt.dto.common.PartnerResponse;
 import com.dungnt.dto.common.TokenResult;
 import com.dungnt.dto.partner.TokenInfoRequest;
 import com.dungnt.dto.token.*;
+import com.dungnt.entity.Order;
+import com.dungnt.entity.User;
 import com.dungnt.util.CommonUtils;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -19,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Path("/merchant/token")
+@Path("/merchant/link")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Singleton
@@ -32,10 +34,15 @@ public class LinkResource {
     CommonUtils utils;
 
     @POST
-    @Path("/initialize-link")
+    @Path("/init")
     public Response initializeLink(InitializeLinkRequest clientRequest) {
-        clientRequest.setOrderId(utils.generateULID());
-        clientRequest.setMerchantUserId(utils.generateULID());
+        Order order = Order.builder().orderId(utils.generateULID()).type("link").status(0).build();
+        order.persist();
+        User user = User.builder().userId(utils.generateULID()).build();
+        user.persist();
+
+        clientRequest.setOrderId(order.getOrderId());
+        clientRequest.setMerchantUserId(user.getUserId());
         PartnerResponse<InitializeLinkResponse> clientResponse = tokenClient.initLink(
                 "", "", clientRequest);
 
@@ -142,7 +149,7 @@ public class LinkResource {
     }
 
     @POST
-    @Path("/link/ipn")
+    @Path("/ipn")
     public Response linkIpn(
             @HeaderParam("Signature") String signature,
             TokenResult body) {
@@ -174,17 +181,34 @@ public class LinkResource {
     }
 
     @POST
-    @Path("/unlink/ipn")
+    @Path("/unlink-ipn")
     public Response unlinkIpn(
             @HeaderParam("Signature") String signature,
             TokenResult body) {
-        if (signature == null || signature.isBlank()) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
+        String orderId = body.getOrderId();
         Map<String, Object> response = new HashMap<>();
-        response.put("code", "00");
-        response.put("orderId", "1234");
+        response.put("orderId", orderId);
+        try {
+            if (signature == null || signature.isBlank()) {
+                response.put("code", "03");
+                return Response.ok(response).build();
+            }
+
+            Integer status = body.getTransactionStatus();
+            String userId = body.getMerchantUserId();
+            String token = body.getToken();
+
+            Order order = Order.find("orderId", orderId).firstResult();
+            order.setStatus(status);
+            order.persist();
+            User user = User.find("userId", userId).firstResult();
+            user.setToken(token);
+            user.persist();
+
+            response.put("code", "00");
+        } catch (Exception e) {
+            response.put("code", "04");
+        }
 
         return Response.ok(response).build();
     }
