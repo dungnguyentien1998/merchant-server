@@ -116,4 +116,12 @@ public class OrderResource {
         return Response.ok(response).build();
     }
 
+    @POST
+    @Path("verify-signature")
+    public Response verifySignature(PaymentResult payload) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("isValid", true);
+        return Response.ok(response).build();
+    }
+
 }

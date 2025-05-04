@@ -22,6 +22,9 @@ public class PaymentResult {
     private Integer transactionStatus;
     private String errorCode;
     private PaymentInstrument paymentInstrument;
+    private String paymentMethod;
+    private String bank;
+    private String signature;
     private List<String> paymentSources;
 
     public static class PaymentInstrument {
