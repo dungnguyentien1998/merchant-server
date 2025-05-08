@@ -14,6 +14,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.HashMap;
@@ -31,6 +32,18 @@ public class OrderResource {
     @Inject
     @RestClient
     PaymentGatewayClient paymentGatewayClient;
+
+    @Inject
+    @ConfigProperty(name = "partner.auth-token")
+    String authToken;
+
+    @Inject
+    @ConfigProperty(name = "partner.return-url")
+    String returnUrl;
+
+    @Inject
+    @ConfigProperty(name = "partner.cancel-url")
+    String cancelUrl;
 
     @POST
     @Path("/verify")
@@ -73,10 +86,10 @@ public class OrderResource {
     public Response createTransaction(CreateTransactionRequest clientRequest) {
         clientRequest.setExpireAfter(900);
         clientRequest.setDescription(StringUtils.isEmpty(clientRequest.getDescription()) ? "TTDV" : clientRequest.getDescription());
-        clientRequest.setCancelUrl("https://google.com");
-        clientRequest.setReturnUrl("https://google.com");
+        clientRequest.setCancelUrl(cancelUrl);
+        clientRequest.setReturnUrl(returnUrl);
         PartnerResponse<CreateTransactionResponse> clientResponse = paymentGatewayClient.createTransaction(
-                "", "", clientRequest);
+                authToken, "", clientRequest);
         Map<String, Object> response = new HashMap<>();
         CreateTransactionResponse baseResponse = clientResponse.getData();
         PartnerResponse.Status status = clientResponse.getStatus();
@@ -113,14 +126,6 @@ public class OrderResource {
         PartnerResponse.Status status = clientResponse.getStatus();
         response.put("code", status.getCode());
 
-        return Response.ok(response).build();
-    }
-
-    @POST
-    @Path("verify-signature")
-    public Response verifySignature(PaymentResult payload) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("isValid", true);
         return Response.ok(response).build();
     }
 

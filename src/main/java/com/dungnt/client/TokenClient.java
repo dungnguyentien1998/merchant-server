@@ -9,8 +9,8 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import java.util.List;
 
-@Path("/sandbox-payment-gateway/public/api")
-@RegisterRestClient(baseUri = "https://stage.code.quarkus.io/api")
+@Path("/paybiz/payment-gateway/public/api")
+@RegisterRestClient(baseUri = "http://125.235.38.229:8080")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public interface TokenClient {
@@ -23,7 +23,7 @@ public interface TokenClient {
     );
 
     @POST
-    @Path("/sandbox-payment-gateway/public/api/v2/token/initialize-link")
+    @Path("/v2/token/initialize-link")
     PartnerResponse<InitializeLinkResponse> initLink(
             @HeaderParam("Authorization") String authToken,
             @HeaderParam("Signature") String signature,

@@ -9,12 +9,15 @@ import com.dungnt.dto.partner.TokenInfoRequest;
 import com.dungnt.dto.token.*;
 import com.dungnt.entity.Order;
 import com.dungnt.entity.User;
+import com.dungnt.service.OrderService;
+import com.dungnt.service.UserService;
 import com.dungnt.util.CommonUtils;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.HashMap;
@@ -26,9 +29,20 @@ import java.util.Map;
 @Consumes(MediaType.APPLICATION_JSON)
 @Singleton
 public class LinkResource {
+
+    @Inject
+    @ConfigProperty(name = "partner.auth-token")
+    String authToken;
+
     @Inject
     @RestClient
     TokenClient tokenClient;
+
+    @Inject
+    OrderService orderService;
+
+    @Inject
+    UserService userService;
 
     @Inject
     CommonUtils utils;
@@ -36,15 +50,13 @@ public class LinkResource {
     @POST
     @Path("/init")
     public Response initializeLink(InitializeLinkRequest clientRequest) {
-        Order order = Order.builder().orderId(utils.generateULID()).type("link").status(0).build();
-        order.persist();
-        User user = User.builder().userId(utils.generateULID()).build();
-        user.persist();
+        Order order = orderService.createOrder();
+        User user = userService.createUser();
 
         clientRequest.setOrderId(order.getOrderId());
         clientRequest.setMerchantUserId(user.getUserId());
         PartnerResponse<InitializeLinkResponse> clientResponse = tokenClient.initLink(
-                "", "", clientRequest);
+                authToken, "", clientRequest);
 
         Map<String, Object> response = new HashMap<>();
         InitializeLinkResponse baseResponse = clientResponse.getData();
