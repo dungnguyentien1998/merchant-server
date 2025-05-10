@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateTransactionRequest extends BaseRequest {
-    private Long transAmount;
+    private Integer transAmount;
     private String description;
     private String otherInfo;
 }

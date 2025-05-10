@@ -8,6 +8,9 @@ import com.dungnt.dto.common.PartnerResponse;
 import com.dungnt.dto.common.PaymentResult;
 import com.dungnt.dto.pg.CreateTransactionRequest;
 import com.dungnt.dto.pg.CreateTransactionResponse;
+import com.dungnt.entity.Order;
+import com.dungnt.service.OrderService;
+import com.dungnt.util.CommonUtils;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.*;
@@ -17,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +48,12 @@ public class OrderResource {
     @Inject
     @ConfigProperty(name = "partner.cancel-url")
     String cancelUrl;
+
+    @Inject
+    CommonUtils utils;
+
+    @Inject
+    OrderService orderService;
 
     @POST
     @Path("/verify")
@@ -73,6 +83,10 @@ public class OrderResource {
         if (signature == null || signature.isBlank()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
+        Integer status = body.getTransactionStatus();
+        String orderId = body.getOrderId();
+
+        orderService.updateOrder(orderId, status);
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "00");
@@ -84,6 +98,7 @@ public class OrderResource {
     @POST
     @Path("create-transaction")
     public Response createTransaction(CreateTransactionRequest clientRequest) {
+        Order order = orderService.createPayOrder(clientRequest.getOrderId(), clientRequest.getTransAmount());
         clientRequest.setExpireAfter(900);
         clientRequest.setDescription(StringUtils.isEmpty(clientRequest.getDescription()) ? "TTDV" : clientRequest.getDescription());
         clientRequest.setCancelUrl(cancelUrl);
@@ -108,11 +123,15 @@ public class OrderResource {
     @Path("search-transaction")
     public Response searchTransaction(SearchTransactionRequest clientRequest) {
         PartnerResponse<List<SearchTransactionResponse>> clientResponse = paymentGatewayClient.searchTransaction(
-                "", "", clientRequest);
+                authToken, "", clientRequest);
         Map<String, Object> response = new HashMap<>();
         PartnerResponse.Status status = clientResponse.getStatus();
+        List<SearchTransactionResponse> baseResponse = clientResponse.getData();
         response.put("code", status.getCode());
-        response.put("data", clientResponse.getData());
+        if (baseResponse != null && !baseResponse.isEmpty()) {
+            response.put("status", baseResponse.get(0).getTransactionStatus());
+            response.put("orderId", clientRequest.getOrderId());
+        }
 
         return Response.ok(response).build();
     }
@@ -120,11 +139,21 @@ public class OrderResource {
     @POST
     @Path("refund-transaction")
     public Response refundTransaction(RefundTransactionRequest clientRequest) {
+        String refundOrderId = utils.generateULID();
+        Order order = orderService.createRefundOrder(refundOrderId, clientRequest.getTransAmount());
+        clientRequest.setOrderId(refundOrderId);
+        clientRequest.setReason("Refund TTDV");
         PartnerResponse<RefundTransactionResponse> clientResponse = paymentGatewayClient.refundTransaction(
-                "", "", clientRequest);
+                authToken, "", clientRequest);
         Map<String, Object> response = new HashMap<>();
         PartnerResponse.Status status = clientResponse.getStatus();
         response.put("code", status.getCode());
+        response.put("orderId", refundOrderId);
+        if ("00".equals(status.getCode())) {
+            response.put("status", 1);
+        } else {
+            response.put("status", 0);
+        }
 
         return Response.ok(response).build();
     }

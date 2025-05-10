@@ -50,7 +50,7 @@ public class LinkResource {
     @POST
     @Path("/init")
     public Response initializeLink(InitializeLinkRequest clientRequest) {
-        Order order = orderService.createOrder();
+        Order order = orderService.createLinkOrder();
         User user = userService.createUser();
 
         clientRequest.setOrderId(order.getOrderId());
