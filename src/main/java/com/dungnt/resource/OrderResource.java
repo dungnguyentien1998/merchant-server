@@ -14,13 +14,14 @@ import com.dungnt.util.CommonUtils;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,10 +37,6 @@ public class OrderResource {
     @Inject
     @RestClient
     PaymentGatewayClient paymentGatewayClient;
-
-    @Inject
-    @ConfigProperty(name = "partner.auth-token")
-    String authToken;
 
     @Inject
     @ConfigProperty(name = "partner.return-url")
@@ -97,14 +94,17 @@ public class OrderResource {
 
     @POST
     @Path("create-transaction")
-    public Response createTransaction(CreateTransactionRequest clientRequest) {
+    public Response createTransaction(CreateTransactionRequest clientRequest, @Context HttpHeaders headers) {
         Order order = orderService.createPayOrder(clientRequest.getOrderId(), clientRequest.getTransAmount());
         clientRequest.setExpireAfter(900);
         clientRequest.setDescription(StringUtils.isEmpty(clientRequest.getDescription()) ? "TTDV" : clientRequest.getDescription());
         clientRequest.setCancelUrl(cancelUrl);
-        clientRequest.setReturnUrl(returnUrl);
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            throw new WebApplicationException("Missing Authorization header", 401);
+        }
         PartnerResponse<CreateTransactionResponse> clientResponse = paymentGatewayClient.createTransaction(
-                authToken, "", clientRequest);
+                authorization, "", clientRequest);
         Map<String, Object> response = new HashMap<>();
         CreateTransactionResponse baseResponse = clientResponse.getData();
         PartnerResponse.Status status = clientResponse.getStatus();
@@ -121,9 +121,13 @@ public class OrderResource {
 
     @POST
     @Path("search-transaction")
-    public Response searchTransaction(SearchTransactionRequest clientRequest) {
+    public Response searchTransaction(SearchTransactionRequest clientRequest, @Context HttpHeaders headers) {
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            throw new WebApplicationException("Missing Authorization header", 401);
+        }
         PartnerResponse<List<SearchTransactionResponse>> clientResponse = paymentGatewayClient.searchTransaction(
-                authToken, "", clientRequest);
+                authorization, "", clientRequest);
         Map<String, Object> response = new HashMap<>();
         PartnerResponse.Status status = clientResponse.getStatus();
         List<SearchTransactionResponse> baseResponse = clientResponse.getData();
@@ -138,13 +142,17 @@ public class OrderResource {
 
     @POST
     @Path("refund-transaction")
-    public Response refundTransaction(RefundTransactionRequest clientRequest) {
+    public Response refundTransaction(RefundTransactionRequest clientRequest, @Context HttpHeaders headers) {
         String refundOrderId = utils.generateULID();
         Order order = orderService.createRefundOrder(refundOrderId, clientRequest.getTransAmount());
         clientRequest.setOrderId(refundOrderId);
         clientRequest.setReason("Refund TTDV");
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            throw new WebApplicationException("Missing Authorization header", 401);
+        }
         PartnerResponse<RefundTransactionResponse> clientResponse = paymentGatewayClient.refundTransaction(
-                authToken, "", clientRequest);
+                authorization, "", clientRequest);
         Map<String, Object> response = new HashMap<>();
         PartnerResponse.Status status = clientResponse.getStatus();
         response.put("code", status.getCode());

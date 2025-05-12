@@ -15,6 +15,8 @@ import com.dungnt.util.CommonUtils;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -31,10 +33,6 @@ import java.util.Map;
 public class LinkResource {
 
     @Inject
-    @ConfigProperty(name = "partner.auth-token")
-    String authToken;
-
-    @Inject
     @RestClient
     TokenClient tokenClient;
 
@@ -49,14 +47,18 @@ public class LinkResource {
 
     @POST
     @Path("/init")
-    public Response initializeLink(InitializeLinkRequest clientRequest) {
+    public Response initializeLink(InitializeLinkRequest clientRequest, @Context HttpHeaders headers) {
         Order order = orderService.createLinkOrder();
         User user = userService.createUser();
 
         clientRequest.setOrderId(order.getOrderId());
         clientRequest.setMerchantUserId(user.getUserId());
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            throw new WebApplicationException("Missing Authorization header", 401);
+        }
         PartnerResponse<InitializeLinkResponse> clientResponse = tokenClient.initLink(
-                authToken, "", clientRequest);
+                authorization, "", clientRequest);
 
         Map<String, Object> response = new HashMap<>();
         InitializeLinkResponse baseResponse = clientResponse.getData();
@@ -72,7 +74,7 @@ public class LinkResource {
 
     @POST
     @Path("/search")
-    public Response search(TokenSearchRequest clientRequest) {
+    public Response search(TokenSearchRequest clientRequest, @HeaderParam("Authorization") String authorization) {
         PartnerResponse<List<TokenSearchResponse>> clientResponse = tokenClient.searchLink(
                 "", "", clientRequest);
         Map<String, Object> response = new HashMap<>();
@@ -84,14 +86,14 @@ public class LinkResource {
 
     @POST
     @Path("/check-available")
-    public Response checkAvailable(PaymentAvailabilityRequest clientRequest) {
+    public Response checkAvailable(PaymentAvailabilityRequest clientRequest, @HeaderParam("Authorization") String authorization) {
         Map<String, Object> response = new HashMap<>();
         return Response.ok(response).build();
     }
 
     @POST
     @Path("/token-payment")
-    public Response paymentByToken(PaymentTokenBaseRequest clientRequest) {
+    public Response paymentByToken(PaymentTokenBaseRequest clientRequest, @HeaderParam("Authorization") String authorization) {
         clientRequest.setOrderId(utils.generateULID());
         clientRequest.setToken("");
         PartnerResponse<PaymentTokenBaseResponse> clientResponse = tokenClient.paymentByToken(
@@ -112,7 +114,7 @@ public class LinkResource {
 
     @POST
     @Path("/token-payment-confirm")
-    public Response paymentByTokenConfirm(PaymentTokenBaseRequest clientRequest) {
+    public Response paymentByTokenConfirm(PaymentTokenBaseRequest clientRequest, @HeaderParam("Authorization") String authorization) {
         PartnerResponse<PaymentTokenBaseResponse> clientResponse = tokenClient.paymentByTokenConfirm(
                 "", "", clientRequest);
         Map<String, Object> response = new HashMap<>();
@@ -127,7 +129,7 @@ public class LinkResource {
 
     @POST
     @Path("/payment-retry-otp")
-    public Response paymentRetryOtp(PaymentTokenBaseRequest clientRequest) {
+    public Response paymentRetryOtp(PaymentTokenBaseRequest clientRequest, @HeaderParam("Authorization") String authorization) {
         PartnerResponse<PaymentTokenBaseResponse> clientResponse = tokenClient.paymentRetryOtp(
                 "", "", clientRequest);
 
