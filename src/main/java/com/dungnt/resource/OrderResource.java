@@ -39,10 +39,6 @@ public class OrderResource {
     PaymentGatewayClient paymentGatewayClient;
 
     @Inject
-    @ConfigProperty(name = "partner.return-url")
-    String returnUrl;
-
-    @Inject
     @ConfigProperty(name = "partner.cancel-url")
     String cancelUrl;
 
