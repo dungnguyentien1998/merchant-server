@@ -5,7 +5,7 @@ FROM gradle:8.14-jdk17 AS builder
 WORKDIR /app
 
 # Copy Gradle configuration files
-COPY --chown=gradle:gradle build.gradle settings.gradle gradle.properties /app/
+COPY --chown=gradle:gradle build.gradle settings.gradle gradle.properties testdb.sqlite /app/
 
 # Copy Gradle wrapper
 COPY --chown=gradle:gradle gradlew /app/
