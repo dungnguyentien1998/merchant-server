@@ -21,6 +21,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     implementation 'org.apache.commons:commons-lang3:3.14.0'
     implementation 'de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0'
+    implementation 'io.quarkus:quarkus-arc'
+    implementation 'io.quarkus:quarkus-logging-json'
 
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'

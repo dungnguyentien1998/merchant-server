@@ -19,7 +19,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.HashMap;
@@ -69,7 +68,7 @@ public class LinkResource {
             response.put("deepLink", baseResponse.getDeepLink());
         }
         response.put("code", status.getCode());
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -81,14 +80,14 @@ public class LinkResource {
         PartnerResponse.Status status = clientResponse.getStatus();
         response.put("code", status.getCode());
         response.put("data", clientResponse.getData());
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
     @Path("/check-available")
     public Response checkAvailable(PaymentAvailabilityRequest clientRequest, @HeaderParam("Authorization") String authorization) {
         Map<String, Object> response = new HashMap<>();
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -109,7 +108,7 @@ public class LinkResource {
                 response.put("code", baseResponse.getTransactionStatus());
             }
         }
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -124,7 +123,7 @@ public class LinkResource {
             PaymentTokenBaseResponse baseResponse = clientResponse.getData();
             response.put("code", baseResponse.getTransactionStatus());
         }
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -143,7 +142,7 @@ public class LinkResource {
                 response.put("code", baseResponse.getTransactionStatus());
             }
         }
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -159,7 +158,7 @@ public class LinkResource {
         response.put("code", "00");
         response.put("orderId", "1234");
 
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -175,7 +174,7 @@ public class LinkResource {
         response.put("code", "00");
         response.put("orderId", "1234");
 
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -191,7 +190,7 @@ public class LinkResource {
         response.put("code", "00");
         response.put("orderId", "1234");
 
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -224,6 +223,6 @@ public class LinkResource {
             response.put("code", "04");
         }
 
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 }

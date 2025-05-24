@@ -49,6 +49,7 @@ public class OrderResource {
     OrderService orderService;
 
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/verify")
     public Response verify(
             @HeaderParam("Signature") String signature,
@@ -64,7 +65,7 @@ public class OrderResource {
         response.put("code", "00");
         response.put("orderId", "1234");
 
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -85,7 +86,7 @@ public class OrderResource {
         response.put("code", "00");
         response.put("orderId", "1234");
 
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -112,7 +113,7 @@ public class OrderResource {
         response.put("code", status.getCode());
         response.put("orderId", clientRequest.getOrderId());
 
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -133,7 +134,7 @@ public class OrderResource {
             response.put("orderId", clientRequest.getOrderId());
         }
 
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
@@ -159,7 +160,7 @@ public class OrderResource {
             response.put("status", 0);
         }
 
-        return Response.ok(response).build();
+        return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
 }
