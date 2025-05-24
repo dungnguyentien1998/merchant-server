@@ -2,8 +2,7 @@ package com.dungnt.resource;
 
 
 import com.dungnt.client.ThirdPartyAuthClient;
-import com.dungnt.dto.common.AuthRequest;
-import com.dungnt.dto.common.AuthResponse;
+import com.dungnt.dto.common.*;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -30,10 +29,14 @@ public class AuthResource {
     @Transactional
     public Response authenticate(AuthRequest request) {
         try {
-            AuthResponse authResponse = authClient.authenticate(request.username, request.password);
+            PartnerResponse<AuthResponse> clientResponse = authClient.authenticate(request.username, request.password);
             LOG.info("Authentication successful");
             Map<String, Object> response = new HashMap<>();
-            response.put("token", authResponse.getToken());
+            AuthResponse baseResponse = clientResponse.getData();
+            PartnerResponse.Status status = clientResponse.getStatus();
+            if (baseResponse != null) {
+                response.put("token", baseResponse.getToken());
+            }
 
             return Response.ok(response).build();
         } catch (WebApplicationException e) {
