@@ -63,7 +63,6 @@ public class OrderResource {
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "00");
-        response.put("orderId", "1234");
 
         return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
@@ -84,7 +83,6 @@ public class OrderResource {
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "00");
-        response.put("orderId", "1234");
 
         return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
