@@ -1,24 +1,30 @@
 package com.dungnt.filter;
 
 import com.dungnt.constant.CommonConstants;
+import com.dungnt.service.SecretReader;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.ext.Provider;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import java.io.IOException;
+import java.util.Properties;
 
 @Provider
 public class LoggingResponseFilter implements ContainerResponseFilter {
-    @ConfigProperty(name = "header", defaultValue = "DefaultHeader")
-    private String header;
+
+    @Inject
+    SecretReader secretReader;
+
     private static final Logger LOG = Logger.getLogger(LoggingResponseFilter.class);
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+        Properties props = secretReader.readSecretFile();
+
         // Add custom response header
-        responseContext.getHeaders().add(CommonConstants.SIG, header);
+        responseContext.getHeaders().add(CommonConstants.SIG, props.getProperty("header", "not-set"));
 
         // Log response body (if it's a readable format like JSON or text)
         Object entity = responseContext.getEntity();
