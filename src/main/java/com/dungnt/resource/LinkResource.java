@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import com.dungnt.service.SecretReader;
+import java.util.Properties;
 
 import java.util.HashMap;
 import java.util.List;
