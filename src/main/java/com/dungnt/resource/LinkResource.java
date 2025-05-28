@@ -44,14 +44,19 @@ public class LinkResource {
     @Inject
     CommonUtils utils;
 
+    @Inject
+    SecretReader secretReader;
+
     @POST
     @Path("/init")
     public Response initializeLink(InitializeLinkRequest clientRequest, @Context HttpHeaders headers) {
+        Properties props = secretReader.readSecretFile();
         Order order = orderService.createLinkOrder();
         User user = userService.createUser();
 
         clientRequest.setOrderId(order.getOrderId());
         clientRequest.setMerchantUserId(user.getUserId());
+        clientRequest.setMerchantCustMsisdn(props.getProperty("msisdn", "84123456789"));
         String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
         if (authorization == null) {
             throw new WebApplicationException("Missing Authorization header", 401);
