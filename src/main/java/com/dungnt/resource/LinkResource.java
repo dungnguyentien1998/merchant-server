@@ -80,9 +80,13 @@ public class LinkResource {
 
     @POST
     @Path("/search")
-    public Response search(TokenSearchRequest clientRequest, @HeaderParam("Authorization") String authorization) {
+    public Response search(TokenSearchRequest clientRequest, @Context HttpHeaders headers) {
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            throw new WebApplicationException("Missing Authorization header", 401);
+        }
         PartnerResponse<List<TokenSearchResponse>> clientResponse = tokenClient.searchLink(
-                "", "", clientRequest);
+                authorization, "", clientRequest);
         Map<String, Object> response = new HashMap<>();
         PartnerResponse.Status status = clientResponse.getStatus();
         response.put("code", status.getCode());
@@ -92,18 +96,26 @@ public class LinkResource {
 
     @POST
     @Path("/check-available")
-    public Response checkAvailable(PaymentAvailabilityRequest clientRequest, @HeaderParam("Authorization") String authorization) {
+    public Response checkAvailable(PaymentAvailabilityRequest clientRequest, @Context HttpHeaders headers) {
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            throw new WebApplicationException("Missing Authorization header", 401);
+        }
         Map<String, Object> response = new HashMap<>();
         return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
 
     @POST
     @Path("/token-payment")
-    public Response paymentByToken(PaymentTokenBaseRequest clientRequest, @HeaderParam("Authorization") String authorization) {
+    public Response paymentByToken(PaymentTokenBaseRequest clientRequest, @Context HttpHeaders headers) {
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            throw new WebApplicationException("Missing Authorization header", 401);
+        }
         clientRequest.setOrderId(utils.generateULID());
         clientRequest.setToken("");
         PartnerResponse<PaymentTokenBaseResponse> clientResponse = tokenClient.paymentByToken(
-                "", "", clientRequest);
+                authorization, "", clientRequest);
 
         Map<String, Object> response = new HashMap<>();
         if (clientResponse != null && clientResponse.getStatus() != null) {
@@ -120,9 +132,13 @@ public class LinkResource {
 
     @POST
     @Path("/token-payment-confirm")
-    public Response paymentByTokenConfirm(PaymentTokenBaseRequest clientRequest, @HeaderParam("Authorization") String authorization) {
+    public Response paymentByTokenConfirm(PaymentTokenBaseRequest clientRequest, @Context HttpHeaders headers) {
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            throw new WebApplicationException("Missing Authorization header", 401);
+        }
         PartnerResponse<PaymentTokenBaseResponse> clientResponse = tokenClient.paymentByTokenConfirm(
-                "", "", clientRequest);
+                authorization, "", clientRequest);
         Map<String, Object> response = new HashMap<>();
 
         if (clientResponse != null && clientResponse.getStatus() != null) {
@@ -135,9 +151,13 @@ public class LinkResource {
 
     @POST
     @Path("/payment-retry-otp")
-    public Response paymentRetryOtp(PaymentTokenBaseRequest clientRequest, @HeaderParam("Authorization") String authorization) {
+    public Response paymentRetryOtp(PaymentTokenBaseRequest clientRequest, @Context HttpHeaders headers) {
+        String authorization = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            throw new WebApplicationException("Missing Authorization header", 401);
+        }
         PartnerResponse<PaymentTokenBaseResponse> clientResponse = tokenClient.paymentRetryOtp(
-                "", "", clientRequest);
+                authorization, "", clientRequest);
 
         Map<String, Object> response = new HashMap<>();
         if (clientResponse != null && clientResponse.getStatus() != null) {
@@ -163,7 +183,6 @@ public class LinkResource {
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "00");
-        response.put("orderId", "1234");
 
         return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
@@ -179,7 +198,6 @@ public class LinkResource {
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "00");
-        response.put("orderId", "1234");
 
         return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
@@ -195,7 +213,6 @@ public class LinkResource {
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "00");
-        response.put("orderId", "1234");
 
         return Response.ok(response).type(MediaType.APPLICATION_JSON).build();
     }
